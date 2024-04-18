@@ -1,4 +1,37 @@
 import pygame
+import random
+
+class Deck:
+    def __init__(self):
+        self.rank = list(range(2, 15))
+        self.suit = ["clubs", "diamond", "spades", "hearts"]
+        self.deck = []
+        self.hand = []
+
+    def generate_cards(self):
+        for rank in self.rank:
+            for suit in self.suit:
+                self.deck.append((rank, suit))
+
+    def shuffle_deck(self):
+        random.shuffle(self.deck)
+
+    def draw_cards(self):
+        for card in self.deck:
+            self.hand.append(card)
+            self.deck.remove(card)
+            if len(self.hand) == 6:
+                break
+        
+        for card in self.hand:
+            print(card)
+
+deck = Deck()
+
+deck.generate_cards()
+deck.shuffle_deck()
+deck.draw_cards()
+
 pygame.init()
 
 SCREEN_WIDTH = 800
