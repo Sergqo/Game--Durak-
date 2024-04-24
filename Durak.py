@@ -3,6 +3,7 @@ import random
 from abc import ABC, abstractmethod
 
 pygame.init()
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
 
 class Cards:
@@ -91,12 +92,15 @@ class AbstractPlayer(ABC):
     def draw_dragged_card(self, screen):
         pass
 
-class TurnManager():
+
+class TurnManager(metaclass=SingletonMeta):
 
     def __init__(self, player1, player2):
         self.player1 = player1
         self.player2 = player2
         self.defender = self.player2
+        
+
 
 class Player(AbstractPlayer):
     def __init__(self, deck, hand_position):
@@ -114,7 +118,8 @@ class Player(AbstractPlayer):
             if event.button == 1:
                 mouse_pos = pygame.mouse.get_pos()
                 for i, (rank, suit) in enumerate(self.hand):
-                    card_rect = pygame.Rect(i*110 + self.hand_position[0], self.hand_position[1], 100, 150)
+                    card_rect = pygame.Rect(
+                        i*110 + self.hand_position[0], self.hand_position[1], 100, 150)
                     if card_rect.collidepoint(mouse_pos):
                         if not self._dragging:
                             self._dragging = True
@@ -125,12 +130,12 @@ class Player(AbstractPlayer):
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if self._dragging:
                 self._dragging = False
-                if 400 <= event.pos[0] <= 1000 and 100 <= event.pos[1] <= 750:
+                if not self.check_boundaries(screen) == -1:
                     card = self.hand.pop(self._original_index)
                     self.cards_to_display.append(card)
                     self.cards_played += 1
-                self._dragged_card = None
-                self._original_index = None
+                    self._dragged_card = None
+                    self._original_index = None
 
     def update(self):
         if self._dragging:
@@ -152,7 +157,8 @@ class Player(AbstractPlayer):
         stack_gap = 20
         card_overlap_gap = 40
 
-        initial_x = screen.get_width() // 2 - ((self.cards_played - 1) * (card_width + stack_gap) // 2)
+        initial_x = screen.get_width() // 2 - ((self.cards_played - 1)
+                                               * (card_width + stack_gap) // 2)
         initial_y = screen.get_height() // 2 + isDefender * card_overlap_gap
 
         for i, card in enumerate(self.cards_to_display):
@@ -160,10 +166,32 @@ class Player(AbstractPlayer):
             card_image = pygame.image.load(
                 f"Images\\{rank}_of_{suit}.png").convert_alpha()
             card_image = pygame.transform.scale(card_image, (100, 150))
-            card_rect = card_image.get_rect()
-            card_rect.centerx = initial_x + (i * (card_width + stack_gap))
+            if isDefender:
+                card_rect = card_image.get_rect()
+                card_rect.centerx = initial_x + (self.check_boundaries(screen) * (card_width + stack_gap))
+            else:
+                card_rect = card_image.get_rect()
+                card_rect.centerx = initial_x + (i * (card_width + stack_gap))
             card_rect.centery = initial_y
             screen.blit(card_image, card_rect)
+
+    def check_boundaries(self, screen):
+        card_height = 150
+        card_width = 100
+        stack_gap = 20
+
+        mouse_pos = pygame.mouse.get_pos()
+
+        initial_x = screen.get_width() // 2 - ((self.cards_played - 1)
+                                               * (card_width + stack_gap) // 2)
+        initial_y = screen.get_height() // 2
+        for i, card in enumerate(self.cards_to_display):
+            if initial_x + (i * (card_width + stack_gap)) - card_width // 2 <= mouse_pos <= initial_x + (i * (card_width + stack_gap)) + card_width // 2 and initial_y - card_height // 2 <= mouse_pos <= initial_y + card_height // 2:
+                return i
+        return -1
+        
+        
+
 
 def isDefender(player, defender):
     if defender == player:
@@ -171,9 +199,9 @@ def isDefender(player, defender):
     else:
         return 0
 
+
 def main():
 
-    screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
     screen_size_x = screen.get_width()
     screen_size_y = screen.get_height()
     pygame.display.set_caption("Durak")
@@ -206,7 +234,8 @@ def main():
 
     background_image = pygame.image.load(
         "Images\\green-casino-poker-table-texture-game-background-free-vector.jpg")
-    background_image = pygame.transform.scale(background_image, (screen_size_x, screen_size_y))
+    background_image = pygame.transform.scale(
+        background_image, (screen_size_x, screen_size_y))
     back_of_card = pygame.image.load("Images\\back of the card.jpg")
     back_of_card = pygame.transform.scale(back_of_card, (100, 150))
 
@@ -221,7 +250,7 @@ def main():
         for event in events:
             if event.type == pygame.QUIT:
                 run = False
-            
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     if turnManager.defender == player1:
@@ -249,15 +278,19 @@ def main():
         screen.blit(back_of_card, (50, 325))
         screen.blit(trump_image, (180, 325))
         if player1_visible:
-            player1.draw_hand(screen, player1_hand_position[1], player1_hand_position[0])
+            player1.draw_hand(
+                screen, player1_hand_position[1], player1_hand_position[0])
         if player2_visible:
-            player2.draw_hand(screen, player2_hand_position[1], player2_hand_position[0])
+            player2.draw_hand(
+                screen, player2_hand_position[1], player2_hand_position[0])
 
         player1.draw_dragged_card(screen)
         player2.draw_dragged_card(screen)
 
-        player1.draw_cards_to_display(screen, isDefender(turnManager.defender, player1))
-        player2.draw_cards_to_display(screen, isDefender(turnManager.defender, player2))
+        player1.draw_cards_to_display(
+            screen, isDefender(turnManager.defender, player1))
+        player2.draw_cards_to_display(
+            screen, isDefender(turnManager.defender, player2))
 
         pygame.draw.rect(screen, (255, 0, 0), quit_button_rect)
         screen.blit(quit_text, (screen_size_x - 110, 30))
@@ -273,3 +306,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
