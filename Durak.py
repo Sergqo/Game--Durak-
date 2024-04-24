@@ -91,6 +91,13 @@ class AbstractPlayer(ABC):
     def draw_dragged_card(self, screen):
         pass
 
+class TurnManager():
+
+    def __init__(self, player1, player2):
+        self.player1 = player1
+        self.player2 = player2
+        self.defender = self.player2
+
 class Player(AbstractPlayer):
     def __init__(self, deck, hand_position):
         super().__init__(deck)
@@ -102,7 +109,7 @@ class Player(AbstractPlayer):
         self.hand = self.deck.deal_cards(num_cards)
 
     def event_handler(self, event):
-        offset_y = 20
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 mouse_pos = pygame.mouse.get_pos()
@@ -140,14 +147,13 @@ class Player(AbstractPlayer):
             card_rect.center = pygame.mouse.get_pos()
             screen.blit(card_image, card_rect)
 
-    def draw_cards_to_display(self, screen):
-        initial_x = screen.get_width() // 2
-        initial_y = screen.get_height() // 2
-
+    def draw_cards_to_display(self, screen, isDefender):
         card_width = 100
         stack_gap = 20
-        offset_y = 20
+        card_overlap_gap = 40
 
+        initial_x = screen.get_width() // 2 - ((self.cards_played - 1) * (card_width + stack_gap) // 2)
+        initial_y = screen.get_height() // 2 + isDefender * card_overlap_gap
 
         for i, card in enumerate(self.cards_to_display):
             rank, suit = card
@@ -156,27 +162,38 @@ class Player(AbstractPlayer):
             card_image = pygame.transform.scale(card_image, (100, 150))
             card_rect = card_image.get_rect()
             card_rect.centerx = initial_x + (i * (card_width + stack_gap))
-            card_rect.centery = initial_y + self.cards_played * offset_y
+            card_rect.centery = initial_y
             screen.blit(card_image, card_rect)
 
+def isDefender(player, defender):
+    if defender == player:
+        return 1
+    else:
+        return 0
 
 def main():
 
-    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+    screen_size_x = screen.get_width()
+    screen_size_y = screen.get_height()
     pygame.display.set_caption("Durak")
 
-    quit_button_rect = pygame.Rect((screen.get_width() - 120, 20, 100, 40))
+    quit_button_rect = pygame.Rect((screen_size_x - 120, 20, 100, 40))
     font = pygame.font.SysFont(None, 32)
     quit_text = font.render("Quit", True, (255, 255, 255))
 
     next_button_rect = pygame.Rect(
-        (screen.get_width() - 160, screen.get_height() / 2 - 20, 140, 40))
+        (screen_size_x - 160, screen_size_y / 2 - 20, 140, 40))
     next_button_text = font.render("Next turn", True, (255, 255, 255))
 
     deck_rect = pygame.Rect((50, 325, 100, 150))
     deck = Deck()
-    player1 = Player(deck, (400, 550))
-    player2 = Player(deck, (400, 100))
+    player1_hand_position = (400, screen_size_y - 250)
+    player2_hand_position = (400, 100)
+    player1 = Player(deck, player1_hand_position)
+    player2 = Player(deck, player2_hand_position)
+
+    turnManager = TurnManager(player1, player2)
 
     player1.deal_hand(6)
     player2.deal_hand(6)
@@ -189,6 +206,7 @@ def main():
 
     background_image = pygame.image.load(
         "Images\\green-casino-poker-table-texture-game-background-free-vector.jpg")
+    background_image = pygame.transform.scale(background_image, (screen_size_x, screen_size_y))
     back_of_card = pygame.image.load("Images\\back of the card.jpg")
     back_of_card = pygame.transform.scale(back_of_card, (100, 150))
 
@@ -203,6 +221,14 @@ def main():
         for event in events:
             if event.type == pygame.QUIT:
                 run = False
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    if turnManager.defender == player1:
+                        turnManager.defender = player2
+                    else:
+                        turnManager.defender = player1
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1 and quit_button_rect.collidepoint(event.pos):
                     run = False
@@ -223,22 +249,22 @@ def main():
         screen.blit(back_of_card, (50, 325))
         screen.blit(trump_image, (180, 325))
         if player1_visible:
-            player1.draw_hand(screen, 550, 400)
+            player1.draw_hand(screen, player1_hand_position[1], player1_hand_position[0])
         if player2_visible:
-            player2.draw_hand(screen, 100, 400)
+            player2.draw_hand(screen, player2_hand_position[1], player2_hand_position[0])
 
         player1.draw_dragged_card(screen)
         player2.draw_dragged_card(screen)
 
-        player1.draw_cards_to_display(screen)
-        player2.draw_cards_to_display(screen)
+        player1.draw_cards_to_display(screen, isDefender(turnManager.defender, player1))
+        player2.draw_cards_to_display(screen, isDefender(turnManager.defender, player2))
 
         pygame.draw.rect(screen, (255, 0, 0), quit_button_rect)
-        screen.blit(quit_text, (screen.get_width() - 110, 30))
+        screen.blit(quit_text, (screen_size_x - 110, 30))
 
         pygame.draw.rect(screen, (0, 255, 0), next_button_rect)
-        screen.blit(next_button_text, (screen.get_width() -
-                    150, screen.get_height() / 2 - 10))
+        screen.blit(next_button_text, (screen_size_x -
+                    150, screen_size_y / 2 - 10))
 
         pygame.display.update()
 
