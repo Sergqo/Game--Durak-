@@ -130,12 +130,19 @@ class Player(AbstractPlayer):
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             if self._dragging:
                 self._dragging = False
-                if not self.check_boundaries(screen) == -1:
+                if len(self.cards_to_display) == 0:
                     card = self.hand.pop(self._original_index)
                     self.cards_to_display.append(card)
                     self.cards_played += 1
                     self._dragged_card = None
                     self._original_index = None
+                else:
+                    if not self.check_boundaries(screen) == -1:
+                        card = self.hand.pop(self._original_index)
+                        self.cards_to_display.append(card)
+                        self.cards_played += 1
+                        self._dragged_card = None
+                        self._original_index = None
 
     def update(self):
         if self._dragging:
@@ -185,8 +192,9 @@ class Player(AbstractPlayer):
         initial_x = screen.get_width() // 2 - ((self.cards_played - 1)
                                                * (card_width + stack_gap) // 2)
         initial_y = screen.get_height() // 2
+        
         for i, card in enumerate(self.cards_to_display):
-            if initial_x + (i * (card_width + stack_gap)) - card_width // 2 <= mouse_pos <= initial_x + (i * (card_width + stack_gap)) + card_width // 2 and initial_y - card_height // 2 <= mouse_pos <= initial_y + card_height // 2:
+            if initial_x + (i * (card_width + stack_gap)) - card_width // 2 <= mouse_pos[0] <= initial_x + (i * (card_width + stack_gap)) + card_width // 2 and initial_y - card_height // 2 <= mouse_pos[1] <= initial_y + card_height // 2:
                 return i
         return -1
         
