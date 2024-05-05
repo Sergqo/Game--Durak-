@@ -34,6 +34,44 @@ After running the game, a hand of cards appears on the bottom. You can pick any 
 
 Polymorphism allows objects of different types to be treated as if they were of the same type. 
 
+Although I did not need to override a method, I used the same method in another class:
+
+```Python
+class Card:
+    def __init__(self, rank, suit):
+        self.rank = rank
+        self.rank_values = {"2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8,
+                            "9": 9, "10": 10, "J": 11, "Q": 12, "K": 13, "A": 14}
+        self.suit = suit
+        self.image = pygame.transform.scale(pygame.image.load(
+            f"Images\\{self.rank}_of_{self.suit}.png").convert_alpha(), (100, 150))
+        self.rect = self.image.get_rect()
+
+    def __str__(self):
+        return f"{self.rank} of {self.suit}"
+
+    def draw(self, pos=None):  # draw card on screen
+        if pos:
+            screen.blit(self.image, pos)
+        else:
+            pos = self.rect.topleft
+            screen.blit(self.image, pos)
+
+    def set_top_left(self, pos):
+        self.rect.topleft = pos
+
+    def __gt__(self, other):
+        return self.rank_values[self.rank] > self.rank_values[other.rank]
+
+
+class TrumpCard(Card):
+    def __init__(self, rank, suit):
+        super().__init__(rank, suit)
+
+    def draw(self, pos=None):  # draw trump card on screen
+        pass
+```
+
 <br>
 
 **2. Abstraction**
