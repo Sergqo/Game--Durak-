@@ -1,120 +1,54 @@
-import pygame
-import random
+
+# Coursework report
+
+<br>
+<br>
+
+## Introduction
+
+<br>
+
+**Description of the application**
+
+My application is a game called "Durak". "Durak" is a traditional Russian card game that is popular in many post-soviet states. This application is a simple simulation of the game using the standard 52-card deck.
+
+<br>
+
+**How to run the program?**
+
+Simply hover on the "Run" option in the top-left corner and then press the "Run without debugging" option. Or you could type "python Durak.py" in the terminal
+
+<br>
+
+**How to play Durak/How to use the program**
+
+After running the game, a hand of cards appears on the bottom. You can pick any card from your hand to play by pressing on the card and dragging it out of your hand. When your turn ends, press "Next turn". When the button is pressed the hand on the bottom gets hidden and another hand gets displayed on the top of the screen. Now it's the second players turn. The objective is to beat the card of your opponent. To beat the card, you have to find a card that has the same suit as the card that you have to beat but higher rank. Then, simply press on the card and drag it onto the card you want to beat. When you manage to beat all of your opponents cards, you can press next turn. If you don't have a way to beat your opponents cards, you have to press the "Take cards" button. If your opponent has a card with the same rank as the cards displayed on the table, he has the choice to attack you with that card and you have to beat that card once again. The game goes on with the same logic until the amount of the cards in the deck is zero and one of the players gets rid of their cards. The last player left with the cards is the "durak" or a fool and loses the game.
+
+## Body/Analysis
+
+**4 object-oriented programming pillars**
+
+<br>
+
+**1. Polymorphism**
+
+Polymorphism allows objects of different types to be treated as if they were of the same type. 
+
+<br>
+
+**2. Abstraction**
+
+Abstraction allows us to simplify complex systems. By creating an abstract class and making abstract methods, we can reuse those abstract methods in other classes to make the code cleaner. Abstract classes cannot be instantiated. To implement abstraction you also need to import the abc module, to use the abstract base class utility.
+
+In my code I made an abstract player class "AbstractPlayer". Then I created some abstract methods to use for specific players in the other class:
+
+```Python
 from abc import ABC, abstractmethod
-import logging
-import unittest
+```
 
-pygame.init()
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+<br>
 
-logging.basicConfig(level=logging.INFO)
-
-
-def log_func_call(func):
-    def wrapper(*args, **kwargs):
-        logging.info(f"Calling function {func.__name__}")
-        result = func(*args, **kwargs)
-        logging.info(f"Function {func.__name__} returned {result}")
-        return result
-    return wrapper
-
-
-defender = None
-players = list()
-# pavadinimas = dict() - padaryti dictionary, iskviecia dict klases konstruktoriu
-cards_to_display = dict()
-
-
-class Card:
-    def __init__(self, rank, suit):
-        self.rank = rank
-        self.rank_values = {"2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8,
-                            "9": 9, "10": 10, "J": 11, "Q": 12, "K": 13, "A": 14}
-        self.suit = suit
-        self.image = pygame.transform.scale(pygame.image.load(
-            f"Images\\{self.rank}_of_{self.suit}.png").convert_alpha(), (100, 150))
-        self.rect = self.image.get_rect()
-
-    def __str__(self):
-        return f"{self.rank} of {self.suit}"
-
-    def draw(self, pos=None):  # draw card on screen
-        if pos:
-            screen.blit(self.image, pos)
-        else:
-            pos = self.rect.topleft
-            screen.blit(self.image, pos)
-
-    def set_top_left(self, pos):
-        self.rect.topleft = pos
-
-    def __gt__(self, other):
-        return self.rank_values[self.rank] > self.rank_values[other.rank]
-
-
-class TrumpCard(Card):
-    def __init__(self, rank, suit):
-        super().__init__(rank, suit)
-
-    def draw(self, pos=None):  # draw trump card on screen
-        pass
-
-
-class Cards:
-    def __init__(self):
-        self.rank = {"2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8,
-                     "9": 9, "10": 10, "J": 11, "Q": 12, "K": 13, "A": 14}
-        self.suit = ("spades", "diamonds", "clubs", "hearts")
-        self.cards = []
-
-    def create_cards(self):
-        for rank in self.rank:
-            for suit in self.suit:
-                self.cards.append(Card(rank, suit))
-
-        return self.cards
-
-
-class SingletonMeta(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            instance = super().__call__(*args, **kwargs)
-            cls._instances[cls] = instance
-        return cls._instances[cls]
-
-
-class Deck(Cards, metaclass=SingletonMeta):
-    def __init__(self):
-        super().__init__()
-        self.create_cards()
-        self.shuffle_deck()
-        self.trump_card = self.get_trump_card()
-        self.trump_card_taken = False
-
-    def shuffle_deck(self):
-        random.shuffle(self.cards)
-
-    def deal_cards(self, num_cards, hand):
-        for card in self.cards[:num_cards]:  # deal numcard cards from the deck
-            hand.append(card)
-        if (num_cards > len(self.cards) and not self.trump_card_taken):
-            hand.append(self.trump_card)
-            self.trump_card_taken = True
-        self.cards = self.cards[num_cards:]  # remove dealt cards from the deck
-        return hand
-
-    def get_trump_card(self):  # trump card is the first card in the deck
-        if self.cards:
-            trump_card = self.cards.pop(0)
-            trump_card.image = pygame.transform.scale(pygame.image.load(
-                f"Images\\{trump_card.rank}_of_{trump_card.suit}.png"), (100, 150))
-            return trump_card
-        else:
-            return None
-
-
+```Python
 class AbstractPlayer(ABC):
     def __init__(self, deck):
         self.deck = deck
@@ -301,29 +235,186 @@ class Player(AbstractPlayer):
             return True
         else:
             return False
+```
+
+<br>
+
+**3. Inheritance**
+
+Inheritance is a mechanism that allows you to reuse existing classes and extend their functionality. The child class gets all the attributes and methods from the parent class
+
+In my code, I used inheritance in many places. One example of it would be when i created a "Cards" class (the parent class) and made another class "Deck" (child class) inherit the parent class:
+
+```Python
+class Cards:
+    def __init__(self):
+        self.rank = {"2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8,
+                     "9": 9, "10": 10, "J": 11, "Q": 12, "K": 13, "A": 14}
+        self.suit = ("spades", "diamonds", "clubs", "hearts")
+        self.cards = []
+
+    def create_cards(self):
+        for rank in self.rank:
+            for suit in self.suit:
+                self.cards.append(Card(rank, suit))
+
+        return self.cards
+```
+
+<br>
+
+```Python
+class Deck(Cards, metaclass=SingletonMeta):
+    def __init__(self):
+        super().__init__()
+        self.create_cards()
+        self.shuffle_deck()
+        self.trump_card = self.get_trump_card()
+        self.trump_card_taken = False
+
+    def shuffle_deck(self):
+        random.shuffle(self.cards)
+
+    def deal_cards(self, num_cards, hand):
+        for card in self.cards[:num_cards]:  # deal numcard cards from the deck
+            hand.append(card)
+        if (num_cards > len(self.cards) and not self.trump_card_taken):
+            hand.append(self.trump_card)
+            self.trump_card_taken = True
+        self.cards = self.cards[num_cards:]  # remove dealt cards from the deck
+        return hand
+
+    def get_trump_card(self):  # trump card is the first card in the deck
+        if self.cards:
+            trump_card = self.cards.pop(0)
+            trump_card.image = pygame.transform.scale(pygame.image.load(
+                f"Images\\{trump_card.rank}_of_{trump_card.suit}.png"), (100, 150))
+            return trump_card
+        else:
+            return None
+```
+
+<br>
+
+**4. Encapsulation**
+
+Encapsulation bundles data and methods that work on data within one unit. It also serves as access control to protect or hide the data.
+
+In my code, I used encapsulation to protect some variables within the classes. Here's the example:
+
+```Python
+def __init__(self, deck):
+        self.deck = deck
+        self._hand = []
+        self._visible = False
+        self._dragging = False
+        self._dragged_card = None
+        self._original_index = None
+```
+
+**Decorators**
+
+<br>
+
+**1. Singleton**
+
+When I created the deck of cards and tried running the game, I encountered a problem. Every turn the game would take a different instance of the deck making the game unplayable. That's when I thought of using the Singleton Pattern to create one instance of the deck.
+
+Singleton checks if there are any instances, if not, it creates an instance, if there already is an instance, it returns the instance that already exists.
+
+Here's how I implemented Singleton in my code:
+
+```Python
+class SingletonMeta(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]
 
 
-def isDefender(player):  # is the player the defender?
-    if defender == player:
-        return 1
-    else:
-        return 0
+class Deck(Cards, metaclass=SingletonMeta):
+    def __init__(self):
+        super().__init__()
+        self.create_cards()
+        self.shuffle_deck()
+        self.trump_card = self.get_trump_card()
+        self.trump_card_taken = False
+
+    def shuffle_deck(self):
+        random.shuffle(self.cards)
+
+    def deal_cards(self, num_cards, hand):
+        for card in self.cards[:num_cards]:  # deal numcard cards from the deck
+            hand.append(card)
+        if (num_cards > len(self.cards) and not self.trump_card_taken):
+            hand.append(self.trump_card)
+            self.trump_card_taken = True
+        self.cards = self.cards[num_cards:]  # remove dealt cards from the deck
+        return hand
+
+    def get_trump_card(self):  # trump card is the first card in the deck
+        if self.cards:
+            trump_card = self.cards.pop(0)
+            trump_card.image = pygame.transform.scale(pygame.image.load(
+                f"Images\\{trump_card.rank}_of_{trump_card.suit}.png"), (100, 150))
+            return trump_card
+        else:
+            return None
+```
+
+<br>
+
+**2. Decorator**
+
+Decorator is a design pattern in Python that allows a user to add new functionality to an existing object without modifying its structure.
+
+The logic is simple: we create a wrapper for a method that we can reuse any time we need. It's useful for multiple functions that require the same additional functionality.
+
+I used a decorator to make a method that checks if the player made a valid move and returns True or False during the game:
+
+```Python
+import logging
+```
+
+<br>
+
+```Python
+logging.basicConfig(level=logging.INFO)
 
 
-def check_win(deck):  # check if the game has ended
-    if (len(deck.cards)) == 0:  # if the deck is empty
-        for player in players:
-            if (player.num_cards_in_hand == 0):  # if a player has no cards left
-                # if the other player also has no cards left
-                if players[1 - players.index(player)].num_cards_in_hand == 0:
-                    print("Tie!")
-                else:  # the other player has cards left
-                    print(player.name + " wins!")
-                return True
+def log_func_call(func):
+    def wrapper(*args, **kwargs):
+        logging.info(f"Calling function {func.__name__}")
+        result = func(*args, **kwargs)
+        logging.info(f"Function {func.__name__} returned {result}")
+        return result
+    return wrapper
+```
 
-    return False
+<br>
 
+```Python
+    @log_func_call
+    def is_valid_move(self, deck, defender_card):
+        attacker_card = self.card_to_defend
+        if defender_card.suit == attacker_card.suit and defender_card > attacker_card:
+            return True
+        elif defender_card.suit == deck.trump_card.suit and attacker_card.suit != deck.trump_card.suit:
+            return True
+        else:
+            return False
+```
 
+**Reading from file & writing to file**
+
+I used writing and reading from file to save the data of a game. You can press the "S" key anytime during the game to save the data to a text file called "save_data.txt" and then press the "L" key to load the data of an unfinished game. Data gets loaded by reading the information that was saved from the same text file.
+
+Save data:
+
+```Python
 # save cards in deck, trump card, player turn, player hands, defender and cards played this round
 def save_data(deck, player1, player2):
     global defender
@@ -401,8 +492,11 @@ def save_data(deck, player1, player2):
         file.write(player2_hand + "]\n")
 
         print("Data saved")
+```
 
+Load data:
 
+```Python
 def load_data(deck, player1, player2):  # load data from save file
     global defender
     global cards_to_display
@@ -566,238 +660,101 @@ def load_data(deck, player1, player2):  # load data from save file
         else:
             player1.num_cards_played = sum(
                 1 for card in cards_to_display.keys())
+```
+
+**Testing**
+
+I wrote an additional script for testing the core functionality of the application using unittest framework. Additional tests can be added any time.
+
+Here's the code:
+
+```Python
+import unittest
+from Durak import Player
+from Durak import Deck
 
 
-def is_enabled(button):  # check if the button can be pressed and is visible
+class TestPlayer(unittest.TestCase):
+    def setUp(self):
+        deck = Deck()
+        self.player1 = Player(deck, "Player 1", (0, 0))
+        self.player2 = Player(deck, "Player 2", (0, 0))
 
-    end_round_button_enabled = False
-    next_button_enabled = False
+    def test_deal_hand(self):
+        self.player1.deal_hand(6)
+        self.player2.deal_hand(6)
+        self.assertEqual(len(self.player1._hand), 6)
+        self.assertEqual(len(self.player2._hand), 6)
 
-    not_all_cards_defended = False
-    for defender_card in cards_to_display.values():  # if there are undefended cards
-        if defender_card == None:
-            not_all_cards_defended = True
-            break
+    def test_player_name(self):
+        self.assertEqual(self.player1.name, "Player 1")
+        self.assertEqual(self.player2.name, "Player 2")
+        self.assertEqual(self.player1.name, "Player 2")
 
-    for i, player in enumerate(players):
-        if player.is_visible():  # this player's turn
-            if isDefender(player):  # defender
-                if not_all_cards_defended:
-                    end_round_button_enabled = True
-                else:
-                    next_button_enabled = True
+    def test_loaded_data(self):
+        with open("save_data.txt", "r") as file:
+            lines = file.readlines()
 
-            else:  # attacker
-                if (len(cards_to_display) > 0 and not_all_cards_defended):
-                    next_button_enabled = True
-                elif (len(cards_to_display) > 0):
-                    end_round_button_enabled = True
+            cards_line = next(
+                (line for line in lines if "cards = " in line), None)
+            self.assertIsNone(cards_line)
 
-    if button == "end_round_button":
-        return end_round_button_enabled
-    elif button == "next_button":
-        return next_button_enabled
+            trump_card_taken_line = next(
+                (line for line in lines if "trump card taken = " in line), None)
+            self.assertIsNone(trump_card_taken_line)
 
+            trump_card_line = next(
+                (line for line in lines if "trump card = " in line), None)
+            self.assertIsNone(trump_card_line)
 
-def main():
+            defender_line = next(
+                (line for line in lines if "defender = " in line), None)
+            self.assertIsNone(defender_line)
 
-    # set up screen
-    screen_size_x = screen.get_width()
-    screen_size_y = screen.get_height()
-    pygame.display.set_caption("Durak")
+            player1_visible_line = next(
+                (line for line in lines if "player1_visible = " in line), None)
+            self.assertIsNone(player1_visible_line)
 
-    # create quit button
-    quit_button_rect = pygame.Rect((screen_size_x - 120, 20, 100, 40))
-    font = pygame.font.SysFont(None, 32)
-    quit_text = font.render("Quit", True, (255, 255, 255))
+            attacker_cards_played_line = next(
+                (line for line in lines if "Attacker cards played = " in line), None)
+            self.assertIsNone(attacker_cards_played_line)
 
-    # create next turn button
-    next_button_rect = pygame.Rect(
-        (screen_size_x - 160, screen_size_y / 2 - 20, 140, 40))
-    next_button_text = font.render("Next turn", True, (255, 255, 255))
+            defender_cards_played_line = next(
+                (line for line in lines if "Defender cards played = " in line), None)
+            self.assertIsNone(defender_cards_played_line)
 
-    end_round_button_rect = pygame.Rect(
-        (screen_size_x - 160, screen_size_y / 2 + 30, 140, 40))
-    end_round_button_text = font.render("End round", True, (255, 255, 255))
+            player1_hand_line = next(
+                (line for line in lines if "Player 1 hand = " in line), None)
+            self.assertIsNone(player1_hand_line)
 
-    global defender
-
-    # create deck and players
-    deck = Deck()
-    player1 = Player(deck, "player1", (400, screen_size_y - 250))
-    player1._visible = True
-    player2 = Player(deck, "player2", (400, 100))
-    defender = player2
-
-    player1.deal_hand(6)
-    player2.deal_hand(6)
-
-    # set up background and card stack images
-    background_image = pygame.image.load(
-        "Images\\green-casino-poker-table-texture-game-background-free-vector.jpg")
-    background_image = pygame.transform.scale(
-        background_image, (screen_size_x, screen_size_y))
-    back_of_card = pygame.image.load("Images\\back of the card.jpg")
-    back_of_card = pygame.transform.scale(back_of_card, (100, 150))
-
-    # start game loop
-    run = True
-
-    while run:
-        events = pygame.event.get()
-
-        for event in events:  # end game
-            if event.type == pygame.QUIT:
-                run = False
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_s:
-                    save_data(deck, player1, player2)
-                if event.key == pygame.K_l:
-                    load_data(deck, player1, player2)
-
-            if event.type == pygame.MOUSEBUTTONDOWN:  # handle mouse clicks
-                # quit button pressed
-                if event.button == 1 and quit_button_rect.collidepoint(event.pos):
-                    run = False
-
-                # next turn button pressed
-                elif event.button == 1 and next_button_rect.collidepoint(event.pos):
-                    if (is_enabled("next_button")):
-                        player1.toggle_visibility()
-                        player2.toggle_visibility()
-
-                # end round button pressed
-                elif event.button == 1 and end_round_button_rect.collidepoint(event.pos):
-                    if is_enabled("end_round_button"):
-                        player1.num_cards_in_hand = len(player1._hand)
-                        player2.num_cards_in_hand = len(player2._hand)
-                        # finds player who clicked the button
-                        for i, player in enumerate(players):
-                            if player.is_visible():
-                                button_clicked_by = player
-
-                        # gynejas (zaidejas, nepaspaudes mygtuko) apsigyne / puolejas paspaude mygtuka
-                        if (not isDefender(button_clicked_by)):
-                            if (len(cards_to_display) > 0):  # attacker played cards this round
-                                undefended_cards = [attacker_card for attacker_card in cards_to_display.keys(
-                                ) if cards_to_display[attacker_card] == None]
-                                # all cards have been defended (the button was pressed legally)
-                                if len(undefended_cards) == 0:
-                                    # other player becomes defender
-                                    defender = players[1 -
-                                                       players.index(defender)]
-                                    player1.toggle_visibility()
-                                    player2.toggle_visibility()
-                                    cards_to_display.clear()
-                                    player1.num_cards_played = 0
-                                    player2.num_cards_played = 0
-                                    run = not check_win(deck)
-                                    # check if both players have at least 6 cards in hand
-                                    if (player1.num_cards_in_hand < 6):
-                                        player1.deal_hand(
-                                            6 - player1.num_cards_in_hand)
-                                        player1.num_cards_in_hand = len(
-                                            player1._hand)
-                                    if (player2.num_cards_in_hand < 6):
-                                        player2.deal_hand(
-                                            6 - player2.num_cards_in_hand)
-                                        player2.num_cards_in_hand = len(
-                                            player1._hand)
-
-                        # gynejas (zaidejas, paspaudes mygtuka) paeme kortas / gynejas paspaude mygtuka
-                        else:
-                            undefended_cards = [attacker_card for attacker_card in cards_to_display.keys(
-                            ) if cards_to_display[attacker_card] == None]
-                            # all cards have NOT been defended (the button was pressed legally)
-                            if not len(undefended_cards) == 0:
-                                for attacker_card in cards_to_display.keys():
-                                    defender._hand.append(attacker_card)
-                                for defender_card in cards_to_display.values():
-                                    if defender_card != None:
-                                        defender._hand.append(defender_card)
-                                defender.num_cards_in_hand = len(
-                                    defender._hand)
-                                player1.toggle_visibility()
-                                player2.toggle_visibility()
-                                cards_to_display.clear()
-                                player1.num_cards_played = 0
-                                player2.num_cards_played = 0
-                                run = not check_win(deck)
-                                # check if both players have at least 6 cards in hand
-                                if (player1.num_cards_in_hand < 6):
-                                    player1.deal_hand(
-                                        6 - player1.num_cards_in_hand)
-                                    player1.num_cards_in_hand = len(
-                                        player1._hand)
-                                if (player2.num_cards_in_hand < 6):
-                                    player2.deal_hand(
-                                        6 - player2.num_cards_in_hand)
-                                    player2.num_cards_in_hand = len(
-                                        player1._hand)
-
-            player1.event_handler(event)
-            player2.event_handler(event)
-
-        # draw screen
-        screen.blit(background_image, (0, 0))
-        # pygame.draw.rect(screen, (0, 255, 0), deck_rect)
-        if (len(deck.cards) > 0):
-            screen.blit(back_of_card, (50, 325))
-            back_of_card_text = font.render(
-                str(len(deck.cards)), True, (255, 255, 255))
-            screen.blit(back_of_card_text, (85, 295))
-            deck.trump_card.draw((180, 325))
-        elif (len(deck.cards) == 0 and not deck.trump_card_taken):
-            deck.trump_card.draw((50, 325))
-
-        # draw buttons
-        pygame.draw.rect(screen, (255, 0, 0), quit_button_rect)
-        screen.blit(quit_text, (screen_size_x - 110, 30))
-
-        # draw player hand, dragged card and cards played by both players
-        for i, player in enumerate(players):
-            if player.is_visible():  # this player's turn
-
-                if isDefender(player):  # defender
-                    if is_enabled("end_round_button"):  # not all cards defended
-                        end_round_button_text = font.render(
-                            "Take cards", True, (255, 255, 255))
-                        pygame.draw.rect(screen, (0, 0, 255),
-                                         end_round_button_rect)
-                        screen.blit(end_round_button_text, (screen_size_x -
-                                                            150, screen_size_y / 2 + 40))
-                    else:  # all cards defended
-                        pygame.draw.rect(screen, (0, 255, 0), next_button_rect)
-                        screen.blit(next_button_text, (screen_size_x -
-                                                       150, screen_size_y / 2 - 10))
-
-                else:  # attacker
-                    if is_enabled("next_button"):  # played a card this turn
-                        pygame.draw.rect(screen, (0, 255, 0), next_button_rect)
-                        screen.blit(next_button_text, (screen_size_x -
-                                                       150, screen_size_y / 2 - 10))
-                    elif is_enabled("end_round_button"):  # all cards defended
-                        end_round_button_text = font.render(
-                            "End round", True, (255, 255, 255))
-                        pygame.draw.rect(screen, (0, 0, 255),
-                                         end_round_button_rect)
-                        screen.blit(end_round_button_text, (screen_size_x -
-                                                            150, screen_size_y / 2 + 40))
-
-                player.draw_hand(
-                    screen, player.hand_position[0], player.hand_position[1])
-                opponent = players[1-i]
-                player.draw_cards_to_display(
-                    screen, isDefender(player), opponent)
-                player.update()  # update dragged card position
-                player.draw_dragged_card()
-
-        pygame.display.update()
-
-    pygame.quit()
+            player2_hand_line = next(
+                (line for line in lines if "Player 2 hand = " in line), None)
+            self.assertIsNone(player2_hand_line)
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
     unittest.main()
+```
+
+**PEP8 style guidelines**
+
+I downloaded a tool through the command prompt called "autopep8". This tool automatically rearranges the code in Pep8 code style just by typing "autopep8 File_name.py --in-place". It is an amazing and incredible tool. The author of this tool is Hideo Hattori.
+
+## Results and summary
+
+**Results:**
+
+* Very hard to find a place to use polymorphism.
+* Hard to keep a clean structure of the code.
+* The code turned out unnecessarily long and all over the place.
+* The visuals (game screen) turned out sloppy and not refined.
+
+<br>
+
+**Conclusion:**
+
+The project was very helpful to get to understand the fundamental concepts of object_oriented programming, as well as, other concepts of programming such as reading from a file and writing to a file, logic, flags. The visual part also required some mathematical knowledge to calculate the positions of the cards and so on. Overall, I am happy with the outcome as it is my first programming project that I finished.
+
+**How could I extend my application?**
+
+I could definitely shorten the code overall, especially the "save_data" and "load_data" methods. Also, I noticed that I forgot to implement a mechanic of the game, where the different can turn the table and make the opponent defend by putting a card of the same rank next to an already placed card. Then, I also forgot to implement some logic: in the end game, when the deck is empty, the attacker should only be allowed to put the amount of cards, depending on how many cards the defender has in his hand. Lastly, I could add some additional options: choosing how many cards there are in a deck (standard 52-cards deck, 36-cards deck, 24-cards deck), choosing a table to play on, cards to play with (skins).
