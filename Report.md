@@ -350,7 +350,7 @@ def __init__(self, deck):
         self._original_index = None
 ```
 
-**Decorators**
+**Design patterns**
 
 <br>
 
